@@ -191,7 +191,7 @@
 
                     if (error) {
                         if (error.message === 'Invalid login credentials') {
-                            throw new Error('Usuario no encontrado o contraseña incorrecta, por favor verifica o regístrate.');
+                            throw new Error('Usuario no encontrado, por favor regístrate');
                         }
                         throw error;
                     }
