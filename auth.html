@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlowOPS - Autenticación</title>
+    <title>FlowOPS - Acceso</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -17,17 +17,17 @@
 
             <form id="auth-form">
                 <div class="input-group" id="nombre-group">
-                    <label for="name">Nombre Completo</label>
-                    <input type="text" id="name" placeholder="Ej. Juan Pérez">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="name" placeholder="Ej. Juan Pérez" required>
                 </div>
 
                 <div class="input-group">
-                    <label for="email">Correo Electrónico</label>
+                    <label>Correo Electrónico</label>
                     <input type="email" id="email" placeholder="tu@correo.com" required>
                 </div>
 
                 <div class="input-group">
-                    <label for="password">Contraseña</label>
+                    <label>Contraseña</label>
                     <input type="password" id="password" placeholder="••••••••" required>
                 </div>
 
@@ -41,69 +41,69 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-    // Esperamos a que la página cargue totalmente
-    document.addEventListener('DOMContentLoaded', function() {
-        const supabase = window.supabase.createClient('https://shbisaggioybktfnjowl.supabase.co', 'sb_publishable_zTyAOnvuO4g66DCPy-dtyQ_y7wLv9TF');
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const supabase = window.supabase.createClient('https://shbisaggioybktfnjowl.supabase.co', 'sb_publishable_zTyAOnvuO4g66DCPy-dtyQ_y7wLv9TF');
 
-        // Seleccionamos los elementos
-        const authTitle = document.getElementById('auth-title');
-        const submitBtn = document.getElementById('submit-btn');
-        const toggleLink = document.getElementById('toggle-link');
-        const nombreGroup = document.getElementById('nombre-group');
-        const nombreInput = document.getElementById('name');
-        const authForm = document.getElementById('auth-form');
+            const authTitle = document.getElementById('auth-title');
+            const authSubtitle = document.getElementById('auth-subtitle');
+            const submitBtn = document.getElementById('submit-btn');
+            const toggleLink = document.getElementById('toggle-link');
+            const nombreGroup = document.getElementById('nombre-group');
+            const nombreInput = document.getElementById('name');
+            const authForm = document.getElementById('auth-form');
 
-        // VERIFICACIÓN: Si no encuentra el botón, nos avisará en la consola
-        if (!toggleLink) { console.error("No encontré el botón de cambiar vista"); return; }
+            // LA LÓGICA DE REDIRECCIÓN INTERNA (EL INTERRUPTOR)
+            toggleLink.onclick = function(e) {
+                e.preventDefault();
 
-        // 1. EL INTERRUPTOR (Ir y venir)
-        toggleLink.onclick = function(e) {
-            e.preventDefault();
-            
-            if (authTitle.innerText === 'Registrate') {
-                // PASAR A LOGIN
-                authTitle.innerText = 'Iniciar sesión';
-                submitBtn.innerText = 'Entrar';
-                toggleLink.innerText = '¿No tienes cuenta? Regístrate aquí';
-                nombreGroup.style.display = 'none'; // Aquí desaparece el nombre
-                nombreInput.required = false;
-            } else {
-                // REGRESAR A REGISTRO
-                authTitle.innerText = 'Registrate';
-                submitBtn.innerText = 'Registrarte';
-                toggleLink.innerText = '¿Ya tienes cuenta? Inicia sesión aquí';
-                nombreGroup.style.display = 'block'; // Aquí reaparece
-                nombreInput.required = true;
-            }
-        };
+                if (authTitle.innerText === 'Registrate') {
+                    // CONFIGURACIÓN PARA INICIAR SESIÓN (Lo que quieres ver al picarle)
+                    authTitle.innerText = 'Iniciar sesión';
+                    authSubtitle.innerText = 'Ingresa tu correo y contraseña.';
+                    submitBtn.innerText = 'Entrar';
+                    toggleLink.innerText = '¿No tienes cuenta? Regístrate aquí';
+                    
+                    nombreGroup.style.display = 'none'; // Desaparece el nombre
+                    nombreInput.required = false;
+                } else {
+                    // CONFIGURACIÓN PARA REGISTRARTE
+                    authTitle.innerText = 'Registrate';
+                    authSubtitle.innerText = 'Crea tu cuenta para empezar.';
+                    submitBtn.innerText = 'Registrarte';
+                    toggleLink.innerText = '¿Ya tienes cuenta? Inicia sesión aquí';
+                    
+                    nombreGroup.style.display = 'block'; // Aparece el nombre
+                    nombreInput.required = true;
+                }
+            };
 
-        // 2. OBJETIVOS: REGISTRAR O ENTRAR
-        authForm.onsubmit = async function(e) {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            // LÓGICA DE OBJETIVOS (REGISTRAR O ENTRAR)
+            authForm.onsubmit = async function(e) {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
 
-            if (authTitle.innerText === 'Registrate') {
-                // GUARDAR INFO (Registro)
-                const { error } = await supabase.auth.signUp({
-                    email: email,
-                    password: password,
-                    options: { data: { full_name: nombreInput.value } }
-                });
-                if (error) alert("Error: " + error.message);
-                else alert("¡Cuenta guardada! Ahora ya puedes Iniciar Sesión.");
-            } else {
-                // VERIFICAR INFO (Login)
-                const { error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-                if (error) alert("Correo o contraseña incorrectos");
-                else window.location.href = 'dashboard.html'; // Entra al Dashboard
-            }
-        };
-    });
+                if (authTitle.innerText === 'Registrate') {
+                    // OBJETIVO: REGISTRAR (Guardar info)
+                    const { error } = await supabase.auth.signUp({
+                        email: email,
+                        password: password,
+                        options: { data: { full_name: nombreInput.value } }
+                    });
+                    if (error) alert("Error: " + error.message);
+                    else alert("¡Cuenta creada! Ahora inicia sesión.");
+                } else {
+                    // OBJETIVO: INICIAR SESIÓN (Verificar y entrar al Dashboard)
+                    const { error } = await supabase.auth.signInWithPassword({
+                        email: email,
+                        password: password
+                    });
+                    if (error) alert("Correo o contraseña incorrectos.");
+                    else window.location.href = 'dashboard.html'; // ENTRADA AL DASHBOARD
+                }
+            };
+        });
     </script>
 </body>
 </html>
