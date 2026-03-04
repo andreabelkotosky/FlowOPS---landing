@@ -42,56 +42,61 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const supabase = window.supabase.createClient('https://shbisaggioybktfnjowl.supabase.co', 'sb_publishable_zTyAOnvuO4g66DCPy-dtyQ_y7wLv9TF');
+    document.addEventListener('DOMContentLoaded', function() {
+        const supabase = window.supabase.createClient('https://shbisaggioybktfnjowl.supabase.co', 'sb_publishable_zTyAOnvuO4g66DCPy-dtyQ_y7wLv9TF');
 
-            const title = document.getElementById('auth-title');
-            const subtitle = document.getElementById('auth-subtitle');
-            const btn = document.getElementById('submit-btn');
-            const link = document.getElementById('toggle-link');
-            const nombreGroup = document.getElementById('nombre-group');
+        const title = document.getElementById('auth-title');
+        const subtitle = document.getElementById('auth-subtitle');
+        const btn = document.getElementById('submit-btn');
+        const link = document.getElementById('toggle-link');
+        const nombreGroup = document.getElementById('nombre-group');
 
-            // FUNCIÓN PARA CAMBIAR TODO (INCLUYENDO EL LINK)
-            link.onclick = function(e) {
-                // Quitamos e.preventDefault() para permitir que el link cambie su terminación
-                
-                if (title.innerText === 'Registrate') {
-                    // MODO: INICIAR SESIÓN (Tu captura 3)
-                    title.innerText = 'Iniciar sesión';
-                    subtitle.innerText = 'Ingresa tu correo y contraseña.';
-                    btn.innerText = 'Entrar';
-                    link.innerText = '¿No tienes cuenta? Regístrate aquí';
-                    link.href = "#login"; // Esto cambia la terminación del link
-                    nombreGroup.style.display = 'none';
-                } else {
-                    // MODO: REGISTRATE (Tu captura 2)
-                    title.innerText = 'Registrate';
-                    subtitle.innerText = 'Crea tu cuenta para empezar.';
-                    btn.innerText = 'Registrarte';
-                    link.innerText = '¿Ya tienes cuenta? Inicia sesión aquí';
-                    link.href = "#signup"; // Esto cambia la terminación del link
-                    nombreGroup.style.display = 'block';
-                }
-            };
+        // --- FUNCIÓN NUEVA: REVISAR EL LINK AL ENTRAR ---
+        function verificarRuta() {
+            if (window.location.hash === '#login') {
+                // Si el link dice #login, forzamos la vista de Iniciar Sesión
+                title.innerText = 'Iniciar sesión';
+                subtitle.innerText = 'Ingresa tu correo y contraseña.';
+                btn.innerText = 'Entrar';
+                link.innerText = '¿No tienes cuenta? Regístrate aquí';
+                link.href = "#signup";
+                nombreGroup.style.display = 'none';
+            } else {
+                // Si no, mostramos Registro
+                title.innerText = 'Registrate';
+                subtitle.innerText = 'Crea tu cuenta para empezar.';
+                btn.innerText = 'Registrarte';
+                link.innerText = '¿Ya tienes cuenta? Inicia sesión aquí';
+                link.href = "#login";
+                nombreGroup.style.display = 'block';
+            }
+        }
 
-            document.getElementById('auth-form').onsubmit = async function(e) {
-                e.preventDefault();
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
+        // Ejecutamos la revisión apenas carga la página
+        verificarRuta();
 
-                if (title.innerText === 'Registrate') {
-                    const { error } = await supabase.auth.signUp({
-                        email, password, options: { data: { full_name: document.getElementById('name').value } }
-                    });
-                    if (error) alert("Error: " + error.message);
-                    else alert("¡Cuenta guardada! Ahora puedes iniciar sesión.");
-                } else {
-                    const { error } = await supabase.auth.signInWithPassword({ email, password });
-                    if (error) alert("Correo o contraseña incorrectos");
-                    else window.location.href = 'dashboard.html'; // ENTRADA AL DASHBOARD
-                }
-            };
-        });
-    </script>
+        // Escuchamos si el link cambia mientras la página está abierta
+        window.addEventListener('hashchange', verificarRuta);
+
+        // Lógica del formulario (Registro / Login)
+        document.getElementById('auth-form').onsubmit = async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (title.innerText === 'Registrate') {
+                const { error } = await supabase.auth.signUp({
+                    email, password, options: { data: { full_name: document.getElementById('name').value } }
+                });
+                if (error) alert("Error: " + error.message);
+                else alert("¡Cuenta guardada! Ahora puedes iniciar sesión.");
+            } else {
+                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) alert("Correo o contraseña incorrectos");
+                else window.location.href = 'dashboard.html';
+            }
+        };
+    } );
+</script>
 </body>
 </html>
