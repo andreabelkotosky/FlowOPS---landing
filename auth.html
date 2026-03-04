@@ -63,50 +63,34 @@
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-       // 1. Configuración de Supabase
-        const supabase = window.supabase.createClient('https://shbisaggioybktfnjowl.supabase.co', 'sb_publishable_zTyAOnvuO4g66DCPy-dtyQ_y7wLv9TF');
+      // 1. Conexión con Supabase
+const supabase = window.supabase.createClient('https://shbisaggioybktfnjowl.supabase.co', 'sb_publishable_zTyAOnvuO4g66DCPy-dtyQ_y7wLv9TF');
 
-        // 2. Selección de elementos (Asegúrate que los IDs coincidan en tu HTML)
-        const authTitle = document.getElementById('auth-title');
-        const authButton = document.getElementById('auth-button');
-        const toggleLink = document.getElementById('toggle-link');
-        const nombreField = document.getElementById('nombre-field');
-        const authForm = document.getElementById('authForm'); // Usamos el ID que ya tienes
+// 2. Función que hace la magia del cambio
+document.addEventListener('DOMContentLoaded', () => {
+    const enlace = document.getElementById('toggle-link');
+    const campoNombre = document.getElementById('nombre-field');
+    const titulo = document.getElementById('auth-title');
+    const botonPrincipal = document.getElementById('auth-button');
 
-        // 3. El interruptor (Switch) para cambiar de Registro a Login
-        toggleLink.addEventListener('click', (e) => {
-            e.preventDefault(); // Evita que la página se recargue
-            
-            if (authTitle.innerText === 'Crear Cuenta') {
-                authTitle.innerText = 'Iniciar Sesión';
-                authButton.innerText = 'Entrar';
-                toggleLink.innerText = '¿No tienes cuenta? Regístrate aquí';
-                nombreField.style.display = 'none'; // Desaparece el nombre
-            } else {
-                authTitle.innerText = 'Crear Cuenta';
-                authButton.innerText = 'Registrarse';
-                toggleLink.innerText = '¿Ya tienes cuenta? Inicia sesión aquí';
-                nombreField.style.display = 'block'; // Aparece el nombre
-            }
-        });
-
-        // 4. Lógica de envío para que funcione el botón
-        authForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            if (authTitle.innerText === 'Crear Cuenta') {
-                const name = document.getElementById('name').value;
-                const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name } } });
-                if (error) alert(error.message);
-                else alert("¡Registro exitoso! Ya puedes iniciar sesión.");
-            } else {
-                const { error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) alert("Usuario no encontrado o datos incorrectos");
-                else window.location.href = 'dashboard.html';
-            }
-        });
+    enlace.addEventListener('click', (e) => {
+        e.preventDefault(); // Esto evita que la página se recargue y se quede igual
+        
+        if (titulo.innerText === 'Crear Cuenta') {
+            // --- MODO LOGIN ---
+            titulo.innerText = 'Iniciar Sesión';
+            botonPrincipal.innerText = 'Entrar';
+            enlace.innerText = '¿No tienes cuenta? Regístrate aquí';
+            campoNombre.style.setProperty('display', 'none', 'important'); // Forzamos la desaparición
+        } else {
+            // --- MODO REGISTRO ---
+            titulo.innerText = 'Crear Cuenta';
+            botonPrincipal.innerText = 'Registrarse';
+            enlace.innerText = '¿Ya tienes cuenta? Inicia sesión aquí';
+            campoNombre.style.setProperty('display', 'block', 'important'); // Forzamos la aparición
+        }
+    });
+});
     </script>
 
     <style>
