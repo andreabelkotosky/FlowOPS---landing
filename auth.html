@@ -24,15 +24,20 @@
         <!-- Tarjeta de Autenticación -->
         <div class="auth-card" id="authCard">
 
-            <h2 id="authTitle">Iniciar Sesión</h2>
-            <p id="authSubtitle">Ingresa a tu cuenta de FlowOPS.</p>
+            <h2 id="authTitle">Crear Cuenta</h2>
+            <p id="authSubtitle">Únete a FlowOPS hoy mismo.</p>
 
-            <form id="authForm" action="dashboard.html" method="GET">
+            <!-- Agregamos un div para mostrar mensajes de error -->
+            <div id="authError"
+                style="display: none; color: #DC2626; background: #FEF2F2; padding: 10px; border-radius: 6px; font-size: 14px; margin-bottom: 20px; border: 1px solid #FCA5A5; text-align: center;">
+            </div>
+
+            <form id="authForm">
 
                 <div class="input-group" id="nameGroup"
-                    style="display: none; opacity: 0; transition: opacity 0.3s ease;">
+                    style="display: block; opacity: 1; transition: opacity 0.3s ease;">
                     <label for="name">Nombre Completo</label>
-                    <input type="text" id="name" name="name" placeholder="Ej. Juan Pérez">
+                    <input type="text" id="name" name="name" placeholder="Ej. Juan Pérez" required>
                 </div>
 
                 <div class="input-group">
@@ -45,31 +50,57 @@
                     <input type="password" id="password" name="password" placeholder="••••••••" required>
                 </div>
 
-                <button type="submit" class="auth-btn" id="submitBtn">Entrar</button>
+                <button type="submit" class="auth-btn" id="submitBtn">Registrarse</button>
             </form>
 
             <div class="auth-toggle">
-                <a href="#" id="toggleLink">¿No tienes cuenta? Regístrate aquí</a>
+                <a href="#" id="toggleLink">¿Ya tienes cuenta? Inicia sesión aquí</a>
             </div>
 
         </div>
     </div>
 
-    <!-- Script para cambiar entre UI de Login y Registro con animaciones -->
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // --- 1. CONFIGURACIÓN DE SUPABASE ---
+        // INSTRUCCIÓN: Reemplaza estas dos variables con los datos de tu proyecto en Supabase
+        const SUPABASE_URL = 'https://shbisaggioybktfnjowl.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_zTyAOnvuO4g66DCPy-dtyQ_y7wLv9TF';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // --- 2. VARIABLES DE LA INTERFAZ ---
         const toggleLink = document.getElementById('toggleLink');
         const authTitle = document.getElementById('authTitle');
         const authSubtitle = document.getElementById('authSubtitle');
         const authBtn = document.getElementById('submitBtn');
         const nameGroup = document.getElementById('nameGroup');
         const nameInput = document.getElementById('name');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
         const authCard = document.getElementById('authCard');
+        const authError = document.getElementById('authError');
 
-        let isLogin = true;
+        let isLogin = false; // Por defecto empezamos en Registro
 
+        // Configuración inicial de la vista de Registro
+        authTitle.textContent = "Crear Cuenta";
+        authSubtitle.textContent = "Únete a FlowOPS hoy mismo.";
+        authBtn.textContent = "Registrarse";
+        toggleLink.textContent = "¿Ya tienes cuenta? Inicia sesión aquí";
+        nameGroup.style.display = 'block';
+        nameGroup.style.opacity = '1';
+        nameInput.required = true;
+
+        // --- 3. LÓGICA DE INTERCAMBIO DE VISTAS (TOGGLE) ---
         toggleLink.addEventListener('click', (e) => {
             e.preventDefault();
             isLogin = !isLogin;
+
+            // Limpiar errores previos
+            authError.style.display = 'none';
+            authError.textContent = '';
 
             // Pequeña animación de la tarjeta
             authCard.style.transform = 'scale(0.98)';
@@ -105,21 +136,73 @@
             }
         });
 
-        // Simulación de carga al enviar el formulario
-        document.getElementById('authForm').addEventListener('submit', function (e) {
-            e.preventDefault(); // Evitamos el envío real un momento para la animación
+        // --- 4. FUNCIÓN PARA MOSTRAR ERRORES ---
+        function showError(message) {
+            authError.textContent = message;
+            authError.style.display = 'block';
 
-            const btn = document.getElementById('submitBtn');
-            const originalText = btn.textContent;
+            // Restaurar el botón original si hubo error
+            authBtn.innerHTML = isLogin ? 'Entrar' : 'Registrarse';
+            authBtn.style.opacity = '1';
+            authBtn.disabled = false;
+        }
 
-            btn.innerHTML = '<span style="display:inline-block; animation: spin 1s linear infinite;">↻</span> Procesando...';
-            btn.style.opacity = '0.8';
-            btn.disabled = true;
+        // --- 5. LÓGICA DE AUTENTICACIÓN ---
+        document.getElementById('authForm').addEventListener('submit', async function (e) {
+            e.preventDefault(); // Evitamos el envío clásico para usar JS
 
-            setTimeout(() => {
-                // Redirigir al dashboard real
-                window.location.href = 'dashboard.html';
-            }, 800);
+            // Ocultar mensajes de error anteriores
+            authError.style.display = 'none';
+            authError.textContent = '';
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            const fullName = nameInput.value.trim();
+
+            // Interfaz de "Procesando"
+            authBtn.innerHTML = '<span style="display:inline-block; animation: spin 1s linear infinite;">↻</span> Procesando...';
+            authBtn.style.opacity = '0.8';
+            authBtn.disabled = true;
+
+            try {
+                if (!isLogin) {
+                    // ====== FLUJO DE REGISTRO ======
+                    const { data, error } = await supabase.auth.signUp({
+                        email: email,
+                        password: password,
+                        options: {
+                            data: {
+                                full_name: fullName
+                            }
+                        }
+                    });
+
+                    if (error) throw error;
+
+                    // Supabase a veces requiere verificación de correo. Si se crea sin problema:
+                    window.location.href = 'dashboard.html';
+
+                } else {
+                    // ====== FLUJO DE INICIO DE SESIÓN ======
+                    const { data, error } = await supabase.auth.signInWithPassword({
+                        email: email,
+                        password: password,
+                    });
+
+                    if (error) {
+                        if (error.message === 'Invalid login credentials') {
+                            throw new Error('Usuario no encontrado o contraseña incorrecta, por favor verifica o regístrate.');
+                        }
+                        throw error;
+                    }
+
+                    // Éxito en el login:
+                    window.location.href = 'dashboard.html';
+                }
+            } catch (err) {
+                console.error("Error en auth:", err.message);
+                showError(err.message);
+            }
         });
     </script>
 
