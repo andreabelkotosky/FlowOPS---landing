@@ -63,137 +63,48 @@
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // --- 1. CONFIGURACIÓN DE SUPABASE ---
-        // INSTRUCCIÓN: Reemplaza estas dos variables con los datos de tu proyecto en Supabase
-        const SUPABASE_URL = 'https://shbisaggioybktfnjowl.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_zTyAOnvuO4g66DCPy-dtyQ_y7wLv9TF';
+       // 1. Configuración de Supabase
+        const supabase = window.supabase.createClient('https://shbisaggioybktfnjowl.supabase.co', 'sb_publishable_zTyAOnvuO4g66DCPy-dtyQ_y7wLv9TF');
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // 2. Selección de elementos (Asegúrate que los IDs coincidan en tu HTML)
+        const authTitle = document.getElementById('auth-title');
+        const authButton = document.getElementById('auth-button');
+        const toggleLink = document.getElementById('toggle-link');
+        const nombreField = document.getElementById('nombre-field');
+        const authForm = document.getElementById('authForm'); // Usamos el ID que ya tienes
 
-        // --- 2. VARIABLES DE LA INTERFAZ ---
-        // Constantes con los nuevos IDs solicitados
-        const toggleLink = document.getElementById('toggleLink');
-        const authTitle = document.getElementById('authTitle');
-        const authSubtitle = document.getElementById('authSubtitle');
-        const authBtn = document.getElementById('submitBtn');
-        const nameGroup = document.getElementById('nameGroup');
-        const nameInput = document.getElementById('name');
-        const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
-        const authCard = document.getElementById('authCard');
-        const authError = document.getElementById('authError');
-
-        // Configuración inicial de la vista de Registro
-        authTitle.textContent = "Crear Cuenta";
-        authSubtitle.textContent = "Únete a FlowOPS hoy mismo.";
-        authBtn.textContent = "Registrarse";
-        toggleLink.textContent = "¿Ya tienes cuenta? Inicia sesión aquí";
-        nameGroup.style.display = 'block';
-        nameGroup.style.opacity = '1';
-        nameInput.required = true;
-
-        // --- 3. LÓGICA DE INTERCAMBIO DE VISTAS (TOGGLE INFALIBLE) ---
-        toggleLink.addEventListener('click', function (e) {
-            e.preventDefault(); // Evitar recarga
-
-            // Limpiar errores previos
-            authError.style.display = 'none';
-            authError.textContent = '';
-
-            // Lógica basada en el texto actual del título principal
-            if (authTitle.textContent === "Crear Cuenta") {
-                // Cambiar a modo Login
-                authTitle.textContent = "Iniciar Sesión";
-                authSubtitle.textContent = "Ingresa a tu cuenta de FlowOPS.";
-                authBtn.textContent = "Entrar";
-                toggleLink.textContent = "¿No tienes cuenta? Regístrate aquí";
-
-                nameGroup.style.display = 'none';
-                nameGroup.style.opacity = '0'; // Keep opacity for transition
-                nameInput.required = false;
+        // 3. El interruptor (Switch) para cambiar de Registro a Login
+        toggleLink.addEventListener('click', (e) => {
+            e.preventDefault(); // Evita que la página se recargue
+            
+            if (authTitle.innerText === 'Crear Cuenta') {
+                authTitle.innerText = 'Iniciar Sesión';
+                authButton.innerText = 'Entrar';
+                toggleLink.innerText = '¿No tienes cuenta? Regístrate aquí';
+                nombreField.style.display = 'none'; // Desaparece el nombre
             } else {
-                // Cambiar a modo Registro
-                authTitle.textContent = "Crear Cuenta";
-                authSubtitle.textContent = "Únete a FlowOPS hoy mismo.";
-                authBtn.textContent = "Registrarse";
-                toggleLink.textContent = "¿Ya tienes cuenta? Inicia sesión aquí";
-
-                nameGroup.style.display = 'block';
-                nameGroup.style.opacity = '1'; // Keep opacity for transition
-                nameInput.required = true;
+                authTitle.innerText = 'Crear Cuenta';
+                authButton.innerText = 'Registrarse';
+                toggleLink.innerText = '¿Ya tienes cuenta? Inicia sesión aquí';
+                nombreField.style.display = 'block'; // Aparece el nombre
             }
         });
 
-        // --- 4. FUNCIÓN PARA MOSTRAR ERRORES ---
-        function showError(message) {
-            authError.textContent = message;
-            authError.style.display = 'block';
+        // 4. Lógica de envío para que funcione el botón
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
 
-            // Restaurar el botón original si hubo error basado en el título actual
-            if (authTitle.textContent === "Crear Cuenta") {
-                authBtn.innerHTML = 'Registrarse';
+            if (authTitle.innerText === 'Crear Cuenta') {
+                const name = document.getElementById('name').value;
+                const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name } } });
+                if (error) alert(error.message);
+                else alert("¡Registro exitoso! Ya puedes iniciar sesión.");
             } else {
-                authBtn.innerHTML = 'Entrar';
-            }
-            authBtn.style.opacity = '1';
-            authBtn.disabled = false;
-        }
-
-        // --- 5. LÓGICA DE AUTENTICACIÓN ---
-        document.getElementById('authForm').addEventListener('submit', async function (e) {
-            e.preventDefault(); // Evitamos el envío clásico para usar JS
-
-            // Ocultar mensajes de error anteriores
-            authError.style.display = 'none';
-            authError.textContent = '';
-
-            const email = emailInput.value.trim();
-            const password = passwordInput.value;
-            const fullName = nameInput.value.trim();
-
-            // Interfaz de "Procesando"
-            authBtn.innerHTML = '<span style="display:inline-block; animation: spin 1s linear infinite;">↻</span> Procesando...';
-            authBtn.style.opacity = '0.8';
-            authBtn.disabled = true;
-
-            try {
-                if (authTitle.textContent === "Crear Cuenta") {
-                    // ====== FLUJO DE REGISTRO ======
-                    const { data, error } = await supabase.auth.signUp({
-                        email: email,
-                        password: password,
-                        options: {
-                            data: {
-                                full_name: fullName
-                            }
-                        }
-                    });
-
-                    if (error) throw error;
-
-                    // Supabase a veces requiere verificación de correo. Si se crea sin problema:
-                    window.location.href = 'dashboard.html';
-
-                } else {
-                    // ====== FLUJO DE INICIO DE SESIÓN ======
-                    const { data, error } = await supabase.auth.signInWithPassword({
-                        email: email,
-                        password: password,
-                    });
-
-                    if (error) {
-                        if (error.message === 'Invalid login credentials') {
-                            throw new Error('Usuario no encontrado, por favor regístrate');
-                        }
-                        throw error;
-                    }
-
-                    // Éxito en el login:
-                    window.location.href = 'dashboard.html';
-                }
-            } catch (err) {
-                console.error("Error en auth:", err.message);
-                showError(err.message);
+                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) alert("Usuario no encontrado o datos incorrectos");
+                else window.location.href = 'dashboard.html';
             }
         });
     </script>
