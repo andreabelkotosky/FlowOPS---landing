@@ -9,83 +9,80 @@
 </head>
 <body class="auth-body">
     <div class="auth-container">
-        <a href="index.html" style="text-decoration: none;">
-            <div class="auth-logo">Flow<span>OPS</span></div>
-        </a>
+        <div class="auth-logo">Flow<span>OPS</span></div>
 
         <div class="auth-card">
             <h2 id="auth-title">Crear Cuenta</h2>
             <p id="auth-subtitle">Únete a FlowOPS hoy mismo.</p>
 
-            <form id="auth-form">
-                <div class="input-group" id="nombre-field">
+            <form id="main-form">
+                <div class="input-group" id="group-nombre">
                     <label>Nombre Completo</label>
-                    <input type="text" id="name" placeholder="Ej. Juan Pérez" required>
+                    <input type="text" id="input-name" placeholder="Ej. Juan Pérez">
                 </div>
 
                 <div class="input-group">
                     <label>Correo Electrónico</label>
-                    <input type="email" id="email" placeholder="tu@correo.com" required>
+                    <input type="email" id="input-email" placeholder="tu@correo.com" required>
                 </div>
 
                 <div class="input-group">
                     <label>Contraseña</label>
-                    <input type="password" id="password" placeholder="••••••••" required>
+                    <input type="password" id="input-password" placeholder="••••••••" required>
                 </div>
 
-                <button type="submit" class="auth-btn" id="auth-button">Registrarse</button>
+                <button type="submit" class="auth-btn" id="btn-principal">Registrarse</button>
             </form>
 
-            <div class="auth-toggle">
-                <a href="#" id="toggle-link">¿Ya tienes cuenta? Inicia sesión aquí</a>
+            <div class="auth-toggle" style="margin-top: 20px; text-align: center;">
+                <a href="#" id="link-switch" style="color: #4F46E5; text-decoration: none; font-size: 14px;">
+                    ¿Ya tienes cuenta? Inicia sesión aquí
+                </a>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const supabase = window.supabase.createClient('https://shbisaggioybktfnjowl.supabase.co', 'sb_publishable_zTyAOnvuO4g66DCPy-dtyQ_y7wLv9TF');
+        const titulo = document.getElementById('auth-title');
+        const subtitulo = document.getElementById('auth-subtitle');
+        const btnPrincipal = document.getElementById('btn-principal');
+        const linkSwitch = document.getElementById('link-switch');
+        const grupoNombre = document.getElementById('group-nombre');
+        const inputNombre = document.getElementById('input-name');
 
-        const authTitle = document.getElementById('auth-title');
-        const authBtn = document.getElementById('auth-button');
-        const toggleLink = document.getElementById('toggle-link');
-        const nombreField = document.getElementById('nombre-field');
-        const authForm = document.getElementById('auth-form');
+        linkSwitch.addEventListener('click', (e) => {
+            e.preventDefault(); // Evita que la página se recargue
 
-        // LA MAGIA DEL CAMBIO
-        toggleLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            
-            if (authTitle.innerText === 'Crear Cuenta') {
-                authTitle.innerText = 'Iniciar Sesión';
-                authBtn.innerText = 'Entrar';
-                toggleLink.innerText = '¿No tienes cuenta? Regístrate aquí';
-                nombreField.style.display = 'none';
-                document.getElementById('name').required = false;
+            if (titulo.innerText === 'Crear Cuenta') {
+                // PASAR A MODO INICIAR SESIÓN
+                titulo.innerText = 'Iniciar Sesión';
+                subtitulo.innerText = 'Ingresa tus credenciales para acceder.';
+                btnPrincipal.innerText = 'Entrar';
+                linkSwitch.innerText = '¿No tienes cuenta? Regístrate aquí';
+                
+                // OCULTAR NOMBRE
+                grupoNombre.style.display = 'none';
+                inputNombre.required = false;
             } else {
-                authTitle.innerText = 'Crear Cuenta';
-                authBtn.innerText = 'Registrarse';
-                toggleLink.innerText = '¿Ya tienes cuenta? Inicia sesión aquí';
-                nombreField.style.display = 'block';
-                document.getElementById('name').required = true;
+                // PASAR A MODO REGISTRO
+                titulo.innerText = 'Crear Cuenta';
+                subtitulo.innerText = 'Únete a FlowOPS hoy mismo.';
+                btnPrincipal.innerText = 'Registrarse';
+                linkSwitch.innerText = '¿Ya tienes cuenta? Inicia sesión aquí';
+                
+                // MOSTRAR NOMBRE
+                grupoNombre.style.display = 'block';
+                inputNombre.required = true;
             }
         });
 
-        // ENVÍO DE FORMULARIO
-        authForm.addEventListener('submit', async (e) => {
+        // Lógica del botón (Por ahora solo para probar que funcione la interfaz)
+        document.getElementById('main-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            if (authTitle.innerText === 'Crear Cuenta') {
-                const name = document.getElementById('name').value;
-                const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name } } });
-                if (error) alert(error.message);
-                else alert("Registro exitoso. ¡Inicia sesión!");
+            if (titulo.innerText === 'Iniciar Sesión') {
+                alert('Aquí el código validará tu correo y contraseña para entrar al Dashboard.');
             } else {
-                const { error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) alert("Usuario no encontrado o datos incorrectos");
-                else window.location.href = 'dashboard.html';
+                alert('Aquí el código guardará tu nombre, correo y contraseña en la base de datos.');
             }
         });
     </script>
