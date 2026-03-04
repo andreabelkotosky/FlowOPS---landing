@@ -3,88 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlowOPS - Autenticación</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <title>FlowOPS - Acceso</title>
+    <style>
+        /* Estilos de emergencia para asegurar que funcione */
+        body { font-family: 'Inter', sans-serif; background: #f3f4f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .auth-card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        .input-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+        input { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box; }
+        .auth-btn { width: 100%; padding: 0.75rem; background: #4F46E5; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
+        .auth-toggle { margin-top: 1.5rem; text-align: center; }
+        #link-switch { color: #4F46E5; text-decoration: none; cursor: pointer; font-size: 0.9rem; }
+        
+        /* Clase para ocultar el nombre */
+        .hidden { display: none !important; }
+    </style>
 </head>
-<body class="auth-body">
-    <div class="auth-container">
-        <div class="auth-logo">Flow<span>OPS</span></div>
+<body>
 
-        <div class="auth-card">
-            <h2 id="auth-title">Crear Cuenta</h2>
-            <p id="auth-subtitle">Únete a FlowOPS hoy mismo.</p>
+    <div class="auth-card">
+        <h2 id="auth-title">Crear Cuenta</h2>
+        <p id="auth-subtitle">Regístrate para empezar.</p>
 
-            <form id="main-form">
-                <div class="input-group" id="group-nombre">
-                    <label>Nombre Completo</label>
-                    <input type="text" id="input-name" placeholder="Ej. Juan Pérez">
-                </div>
-
-                <div class="input-group">
-                    <label>Correo Electrónico</label>
-                    <input type="email" id="input-email" placeholder="tu@correo.com" required>
-                </div>
-
-                <div class="input-group">
-                    <label>Contraseña</label>
-                    <input type="password" id="input-password" placeholder="••••••••" required>
-                </div>
-
-                <button type="submit" class="auth-btn" id="btn-principal">Registrarse</button>
-            </form>
-
-            <div class="auth-toggle" style="margin-top: 20px; text-align: center;">
-                <a href="#" id="link-switch" style="color: #4F46E5; text-decoration: none; font-size: 14px;">
-                    ¿Ya tienes cuenta? Inicia sesión aquí
-                </a>
+        <form id="main-form">
+            <div id="group-nombre" class="input-group">
+                <label>Nombre Completo</label>
+                <input type="text" id="input-name" placeholder="Tu nombre" required>
             </div>
+
+            <div class="input-group">
+                <label>Correo Electrónico</label>
+                <input type="email" id="input-email" required>
+            </div>
+
+            <div class="input-group">
+                <label>Contraseña</label>
+                <input type="password" id="input-password" required>
+            </div>
+
+            <button type="submit" class="auth-btn" id="btn-principal">Registrarse</button>
+        </form>
+
+        <div class="auth-toggle">
+            <a id="link-switch">¿Ya tienes cuenta? Inicia sesión aquí</a>
         </div>
     </div>
 
     <script>
         const titulo = document.getElementById('auth-title');
-        const subtitulo = document.getElementById('auth-subtitle');
-        const btnPrincipal = document.getElementById('btn-principal');
-        const linkSwitch = document.getElementById('link-switch');
-        const grupoNombre = document.getElementById('group-nombre');
-        const inputNombre = document.getElementById('input-name');
+        const btn = document.getElementById('btn-principal');
+        const link = document.getElementById('link-switch');
+        const nombreDiv = document.getElementById('group-nombre');
+        const nombreInput = document.getElementById('input-name');
 
-        linkSwitch.addEventListener('click', (e) => {
-            e.preventDefault(); // Evita que la página se recargue
-
+        link.onclick = function(e) {
+            e.preventDefault();
+            
             if (titulo.innerText === 'Crear Cuenta') {
-                // PASAR A MODO INICIAR SESIÓN
+                // CAMBIAR A LOGIN
                 titulo.innerText = 'Iniciar Sesión';
-                subtitulo.innerText = 'Ingresa tus credenciales para acceder.';
-                btnPrincipal.innerText = 'Entrar';
-                linkSwitch.innerText = '¿No tienes cuenta? Regístrate aquí';
-                
-                // OCULTAR NOMBRE
-                grupoNombre.style.display = 'none';
-                inputNombre.required = false;
+                btn.innerText = 'Entrar';
+                link.innerText = '¿No tienes cuenta? Regístrate aquí';
+                nombreDiv.classList.add('hidden'); // OCULTA EL CAMPO
+                nombreInput.required = false;
             } else {
-                // PASAR A MODO REGISTRO
+                // CAMBIAR A REGISTRO
                 titulo.innerText = 'Crear Cuenta';
-                subtitulo.innerText = 'Únete a FlowOPS hoy mismo.';
-                btnPrincipal.innerText = 'Registrarse';
-                linkSwitch.innerText = '¿Ya tienes cuenta? Inicia sesión aquí';
-                
-                // MOSTRAR NOMBRE
-                grupoNombre.style.display = 'block';
-                inputNombre.required = true;
+                btn.innerText = 'Registrarse';
+                link.innerText = '¿Ya tienes cuenta? Inicia sesión aquí';
+                nombreDiv.classList.remove('hidden'); // MUESTRA EL CAMPO
+                nombreInput.required = true;
             }
-        });
+        };
 
-        // Lógica del botón (Por ahora solo para probar que funcione la interfaz)
-        document.getElementById('main-form').addEventListener('submit', (e) => {
+        document.getElementById('main-form').onsubmit = function(e) {
             e.preventDefault();
             if (titulo.innerText === 'Iniciar Sesión') {
-                alert('Aquí el código validará tu correo y contraseña para entrar al Dashboard.');
+                alert("Intentando entrar con: " + document.getElementById('input-email').value);
             } else {
-                alert('Aquí el código guardará tu nombre, correo y contraseña en la base de datos.');
+                alert("Registrando a: " + nombreInput.value);
             }
-        });
+        };
     </script>
 </body>
 </html>
