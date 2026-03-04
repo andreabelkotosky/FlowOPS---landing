@@ -102,37 +102,26 @@
             authError.style.display = 'none';
             authError.textContent = '';
 
-            // Pequeña animación de la tarjeta
-            authCard.style.transform = 'scale(0.98)';
-            setTimeout(() => {
-                authCard.style.transform = 'scale(1)';
-            }, 150);
-
             if (isLogin) {
-                // Modo Login
+                // Modo Login: Ocultar nombre
                 authTitle.textContent = "Iniciar Sesión";
                 authSubtitle.textContent = "Ingresa a tu cuenta de FlowOPS.";
                 authBtn.textContent = "Entrar";
                 toggleLink.textContent = "¿No tienes cuenta? Regístrate aquí";
 
+                nameGroup.style.display = 'none';
                 nameGroup.style.opacity = '0';
-                setTimeout(() => {
-                    nameGroup.style.display = 'none';
-                    nameInput.required = false;
-                }, 300);
+                nameInput.removeAttribute('required');
             } else {
-                // Modo Registro
+                // Modo Registro: Mostrar nombre
                 authTitle.textContent = "Crear Cuenta";
                 authSubtitle.textContent = "Únete a FlowOPS hoy mismo.";
                 authBtn.textContent = "Registrarse";
                 toggleLink.textContent = "¿Ya tienes cuenta? Inicia sesión aquí";
 
                 nameGroup.style.display = 'block';
-                nameInput.required = true;
-                // Pequeño delay para que la transición de opacidad funcione
-                setTimeout(() => {
-                    nameGroup.style.opacity = '1';
-                }, 10);
+                nameGroup.style.opacity = '1';
+                nameInput.setAttribute('required', 'required');
             }
         });
 
