@@ -18,7 +18,7 @@
             <form id="auth-form">
                 <div class="input-group" id="nombre-group">
                     <label>Nombre Completo</label>
-                    <input type="text" id="name" placeholder="Ej. Juan Pérez" required>
+                    <input type="text" id="name" placeholder="Ej. Juan Pérez">
                 </div>
 
                 <div class="input-group">
@@ -45,62 +45,51 @@
         document.addEventListener('DOMContentLoaded', function() {
             const supabase = window.supabase.createClient('https://shbisaggioybktfnjowl.supabase.co', 'sb_publishable_zTyAOnvuO4g66DCPy-dtyQ_y7wLv9TF');
 
-            const authTitle = document.getElementById('auth-title');
-            const authSubtitle = document.getElementById('auth-subtitle');
-            const submitBtn = document.getElementById('submit-btn');
-            const toggleLink = document.getElementById('toggle-link');
+            const title = document.getElementById('auth-title');
+            const subtitle = document.getElementById('auth-subtitle');
+            const btn = document.getElementById('submit-btn');
+            const link = document.getElementById('toggle-link');
             const nombreGroup = document.getElementById('nombre-group');
-            const nombreInput = document.getElementById('name');
-            const authForm = document.getElementById('auth-form');
 
-            // LA LÓGICA DE REDIRECCIÓN INTERNA (EL INTERRUPTOR)
-            toggleLink.onclick = function(e) {
+            // LA FUNCIÓN QUE CORRIGE LO QUE OBSERVASTE
+            link.onclick = function(e) {
                 e.preventDefault();
 
-                if (authTitle.innerText === 'Registrate') {
-                    // CONFIGURACIÓN PARA INICIAR SESIÓN (Lo que quieres ver al picarle)
-                    authTitle.innerText = 'Iniciar sesión';
-                    authSubtitle.innerText = 'Ingresa tu correo y contraseña.';
-                    submitBtn.innerText = 'Entrar';
-                    toggleLink.innerText = '¿No tienes cuenta? Regístrate aquí';
-                    
-                    nombreGroup.style.display = 'none'; // Desaparece el nombre
-                    nombreInput.required = false;
+                if (title.innerText === 'Registrate') {
+                    // MODO: INICIAR SESIÓN (Tu segunda captura)
+                    title.innerText = 'Iniciar sesión';
+                    subtitle.innerText = 'Ingresa tu correo y contraseña.';
+                    btn.innerText = 'Entrar';
+                    link.innerText = '¿No tienes cuenta? Regístrate aquí';
+                    nombreGroup.style.display = 'none'; // Escondemos el nombre
                 } else {
-                    // CONFIGURACIÓN PARA REGISTRARTE
-                    authTitle.innerText = 'Registrate';
-                    authSubtitle.innerText = 'Crea tu cuenta para empezar.';
-                    submitBtn.innerText = 'Registrarte';
-                    toggleLink.innerText = '¿Ya tienes cuenta? Inicia sesión aquí';
-                    
-                    nombreGroup.style.display = 'block'; // Aparece el nombre
-                    nombreInput.required = true;
+                    // MODO: REGISTRATE (Tu primera captura)
+                    title.innerText = 'Registrate';
+                    subtitle.innerText = 'Crea tu cuenta para empezar.';
+                    btn.innerText = 'Registrarte';
+                    link.innerText = '¿Ya tienes cuenta? Inicia sesión aquí';
+                    nombreGroup.style.display = 'block'; // Mostramos el nombre
                 }
             };
 
-            // LÓGICA DE OBJETIVOS (REGISTRAR O ENTRAR)
-            authForm.onsubmit = async function(e) {
+            // Manejo de los formularios (Registro vs Login)
+            document.getElementById('auth-form').onsubmit = async function(e) {
                 e.preventDefault();
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
 
-                if (authTitle.innerText === 'Registrate') {
-                    // OBJETIVO: REGISTRAR (Guardar info)
+                if (title.innerText === 'Registrate') {
+                    // Lógica para Crear Cuenta
                     const { error } = await supabase.auth.signUp({
-                        email: email,
-                        password: password,
-                        options: { data: { full_name: nombreInput.value } }
+                        email, password, options: { data: { full_name: document.getElementById('name').value } }
                     });
-                    if (error) alert("Error: " + error.message);
-                    else alert("¡Cuenta creada! Ahora inicia sesión.");
+                    if (error) alert(error.message);
+                    else alert("¡Registro exitoso!");
                 } else {
-                    // OBJETIVO: INICIAR SESIÓN (Verificar y entrar al Dashboard)
-                    const { error } = await supabase.auth.signInWithPassword({
-                        email: email,
-                        password: password
-                    });
-                    if (error) alert("Correo o contraseña incorrectos.");
-                    else window.location.href = 'dashboard.html'; // ENTRADA AL DASHBOARD
+                    // Lógica para Entrar (Dashboard)
+                    const { error } = await supabase.auth.signInWithPassword({ email, password });
+                    if (error) alert("Correo o contraseña incorrectos");
+                    else window.location.href = 'dashboard.html';
                 }
             };
         });
