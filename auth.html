@@ -56,34 +56,26 @@
         const nombreDiv = document.getElementById('group-nombre');
         const nombreInput = document.getElementById('input-name');
 
-        link.onclick = function(e) {
-            e.preventDefault();
-            
-            if (titulo.innerText === 'Crear Cuenta') {
-                // CAMBIAR A LOGIN
-                titulo.innerText = 'Iniciar Sesión';
-                btn.innerText = 'Entrar';
-                link.innerText = '¿No tienes cuenta? Regístrate aquí';
-                nombreDiv.classList.add('hidden'); // OCULTA EL CAMPO
-                nombreInput.required = false;
-            } else {
-                // CAMBIAR A REGISTRO
-                titulo.innerText = 'Crear Cuenta';
-                btn.innerText = 'Registrarse';
-                link.innerText = '¿Ya tienes cuenta? Inicia sesión aquí';
-                nombreDiv.classList.remove('hidden'); // MUESTRA EL CAMPO
-                nombreInput.required = true;
-            }
-        };
+link.onclick = function(e) {
+    e.preventDefault(); // Evita que la página se recargue solo porque sí
 
-        document.getElementById('main-form').onsubmit = function(e) {
-            e.preventDefault();
-            if (titulo.innerText === 'Iniciar Sesión') {
-                alert("Intentando entrar con: " + document.getElementById('input-email').value);
-            } else {
-                alert("Registrando a: " + nombreInput.value);
-            }
-        };
+    // Si el título actual es "Crear Cuenta", pasamos a LOGIN
+    if (titulo.innerText === 'Crear Cuenta') {
+        titulo.innerText = 'Iniciar Sesión';
+        btn.innerText = 'Entrar';
+        link.innerText = '¿No tienes cuenta? Regístrate aquí'; // Cambiamos el texto de abajo
+        nombreDiv.style.display = 'none'; // Escondemos el nombre
+        nombreInput.required = false; // Ya no es obligatorio
+    } 
+    // SI NO (o sea, si ya dice "Iniciar Sesión"), regresamos a REGISTRO
+    else {
+        titulo.innerText = 'Crear Cuenta';
+        btn.innerText = 'Registrarse';
+        link.innerText = '¿Ya tienes cuenta? Inicia sesión aquí'; // Regresamos el texto original
+        nombreDiv.style.display = 'block'; // Volvemos a mostrar el nombre
+        nombreInput.required = true; // Vuelve a ser obligatorio
+    }
+};
     </script>
 </body>
 </html>
