@@ -9,7 +9,7 @@
 </head>
 <body class="auth-body">
     <div class="auth-container">
-        <div class="auth-logo">Flow<span>TEST</span></div>
+        <div class="auth-logo">Flow<span>OPS</span></div>
 
         <div class="auth-card">
             <h2 id="auth-title">Registrate</h2>
@@ -35,7 +35,7 @@
             </form>
 
             <div class="auth-toggle">
-                <a href="#" id="toggle-link">¿Ya tienes cuenta? Inicia sesión aquí</a>
+                <a href="#signup" id="toggle-link">¿Ya tienes cuenta? Inicia sesión aquí</a>
             </div>
         </div>
     </div>
@@ -51,45 +51,44 @@
             const link = document.getElementById('toggle-link');
             const nombreGroup = document.getElementById('nombre-group');
 
-            // LA FUNCIÓN QUE CORRIGE LO QUE OBSERVASTE
+            // FUNCIÓN PARA CAMBIAR TODO (INCLUYENDO EL LINK)
             link.onclick = function(e) {
-                e.preventDefault();
-
+                // Quitamos e.preventDefault() para permitir que el link cambie su terminación
+                
                 if (title.innerText === 'Registrate') {
-                    // MODO: INICIAR SESIÓN (Tu segunda captura)
+                    // MODO: INICIAR SESIÓN (Tu captura 3)
                     title.innerText = 'Iniciar sesión';
                     subtitle.innerText = 'Ingresa tu correo y contraseña.';
                     btn.innerText = 'Entrar';
                     link.innerText = '¿No tienes cuenta? Regístrate aquí';
-                    nombreGroup.style.display = 'none'; // Escondemos el nombre
+                    link.href = "#login"; // Esto cambia la terminación del link
+                    nombreGroup.style.display = 'none';
                 } else {
-                    // MODO: REGISTRATE (Tu primera captura)
+                    // MODO: REGISTRATE (Tu captura 2)
                     title.innerText = 'Registrate';
                     subtitle.innerText = 'Crea tu cuenta para empezar.';
                     btn.innerText = 'Registrarte';
                     link.innerText = '¿Ya tienes cuenta? Inicia sesión aquí';
-                    nombreGroup.style.display = 'block'; // Mostramos el nombre
+                    link.href = "#signup"; // Esto cambia la terminación del link
+                    nombreGroup.style.display = 'block';
                 }
             };
 
-            // Manejo de los formularios (Registro vs Login)
             document.getElementById('auth-form').onsubmit = async function(e) {
                 e.preventDefault();
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
 
                 if (title.innerText === 'Registrate') {
-                    // Lógica para Crear Cuenta
                     const { error } = await supabase.auth.signUp({
                         email, password, options: { data: { full_name: document.getElementById('name').value } }
                     });
-                    if (error) alert(error.message);
-                    else alert("¡Registro exitoso!");
+                    if (error) alert("Error: " + error.message);
+                    else alert("¡Cuenta guardada! Ahora puedes iniciar sesión.");
                 } else {
-                    // Lógica para Entrar (Dashboard)
                     const { error } = await supabase.auth.signInWithPassword({ email, password });
                     if (error) alert("Correo o contraseña incorrectos");
-                    else window.location.href = 'dashboard.html';
+                    else window.location.href = 'dashboard.html'; // ENTRADA AL DASHBOARD
                 }
             };
         });
