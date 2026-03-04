@@ -57,23 +57,27 @@
         const nombreInput = document.getElementById('input-name');
 
 link.onclick = function(e) {
-    e.preventDefault(); // Evita que la página se recargue solo porque sí
-
-    // Si el título actual es "Crear Cuenta", pasamos a LOGIN
+    e.preventDefault();
+    
     if (titulo.innerText === 'Crear Cuenta') {
+        // --- ESTO ACTIVA EL MODO DE TU FOTO ---
         titulo.innerText = 'Iniciar Sesión';
+        subtitulo.innerText = 'Regístrate para empezar.'; // Texto de tu captura
         btn.innerText = 'Entrar';
-        link.innerText = '¿No tienes cuenta? Regístrate aquí'; // Cambiamos el texto de abajo
-        nombreDiv.style.display = 'none'; // Escondemos el nombre
-        nombreInput.required = false; // Ya no es obligatorio
+        link.innerText = '¿No tienes cuenta? Regístrate aquí';
+        
+        nombreDiv.style.display = 'none'; // Esconde el nombre
+        nombreInput.required = false;
     } 
-    // SI NO (o sea, si ya dice "Iniciar Sesión"), regresamos a REGISTRO
     else {
+        // --- ESTO REGRESA AL MODO REGISTRO ---
         titulo.innerText = 'Crear Cuenta';
+        subtitulo.innerText = 'Únete a FlowOPS hoy mismo.';
         btn.innerText = 'Registrarse';
-        link.innerText = '¿Ya tienes cuenta? Inicia sesión aquí'; // Regresamos el texto original
-        nombreDiv.style.display = 'block'; // Volvemos a mostrar el nombre
-        nombreInput.required = true; // Vuelve a ser obligatorio
+        link.innerText = '¿Ya tienes cuenta? Inicia sesión aquí';
+        
+        nombreDiv.style.display = 'block'; // Muestra el nombre
+        nombreInput.required = true;
     }
 };
     </script>
