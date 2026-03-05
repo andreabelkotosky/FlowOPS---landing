@@ -89,7 +89,7 @@
                     email, password, options: { data: { full_name: document.getElementById('name').value } }
                 });
                 if (error) alert("Error: " + error.message);
-                else alert("¡Cuenta guardada! Ahora puedes iniciar sesión.");
+                else alert(""¡Cuenta registrada con éxito! Revisa tu correo para verificar tu cuenta. Una vez confirmado, podrás iniciar sesión y entrar.");
             } else {
                 const { error } = await supabase.auth.signInWithPassword({ email, password });
                 if (error) alert("Correo o contraseña incorrectos");
