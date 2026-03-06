@@ -60,14 +60,18 @@
     <script>
         const _supabase = window.supabase.createClient('https://shbisaggioybktfnjowl.supabase.co', 'sb_publishable_zTyAOnvuO4g66DCPy-dtyQ_y7wLv9TF');
 
-        async function verificarAcceso() {
+       async function verificarAcceso() {
     const { data: { session } } = await _supabase.auth.getSession();
+    
     if (!session) { 
+        // Si no hay sesión, manda al login
         window.location.href = 'auth.html#login'; 
     } else { 
+        // Si hay sesión, pone el nombre y carga todo lo demás
         document.getElementById('display-name').innerText = session.user.user_metadata.full_name || "Líder"; 
         
-        // Esta es la línea mágica que activa el semáforo:
+        // Ejecutamos las dos funciones principales
+        cargarStaff(); 
         cargarChecklist(); 
     }
 }
