@@ -39,10 +39,11 @@
                             </div>
                         </div>
                         <div class="feature-card">
-                            <h3>📹 Tip del Día</h3>
-                            <div style="background: #f3f4f6; height: 150px; border-radius: 12px; display:flex; align-items:center; justify-content:center; color: #9ca3af;">[ Video Relleno ]</div>
+                            <h3>✅ Check-list por Sector</h3>
+                            <div id="tasks-container">
+                                <p style="color: #9ca3af;">Cargando tareas...</p>
+                            </div>
                         </div>
-                    </div>
                 </div>
             </div>
         </main>
@@ -62,8 +63,7 @@
     <script>
        // 1. Configuración Inicial
         const { createClient } = supabase;
-        const _supabase = createClient('https://tu-proyecto.supabase.co', 'tu-key-larga-aqui');
-
+        const _supabase = supabase.createClient('https://shbisaggioybktfnjowl.supabase.co', 'sb_publishable_zTyAOnvuO4g66DCPy-dtyQ_y7wLv9TF');
         // 2. Verificar Acceso al entrar
         async function verificarAcceso() {
             const { data: { session } } = await _supabase.auth.getSession();
