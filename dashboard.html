@@ -148,6 +148,24 @@
         lista.innerHTML = "<p style='color: #9ca3af; font-style: italic;'>No hay staff registrado aún.</p>";
     }
 };
+        // --- FUNCIÓN PARA ELIMINAR STAFF ---
+async function eliminarStaff(id) {
+    const confirmar = confirm("¿Estás segura de que quieres eliminar a este miembro del equipo?");
+    
+    if (confirmar) {
+        const { error } = await _supabase
+            .from('profiles')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            alert("Error al eliminar: " + error.message);
+        } else {
+            alert("Empleado eliminado.");
+            cargarStaff(); // Esto hace que la tabla se actualice solita
+        }
+    }
+}
 
         verificarAcceso();
     </script>
