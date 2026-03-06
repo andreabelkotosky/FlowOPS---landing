@@ -73,44 +73,103 @@
 <body>
 
     <div class="dashboard-container">
-        <main class="main-content">
-            <h1 class="user-welcome">Hola, <span id="display-name">...</span></h1>
-            <p style="color: #6b7280; margin-bottom: 40px;">Este es el pulso operativo de tu restaurante hoy.</p>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div class="feature-card">
-                    <h3>✅ Check-list por Sector</h3>
-                    <p style="font-size: 14px; color: #6b7280;">Selecciona un área para ver pendientes.</p>
-                    <div id="tasks-container" style="margin-top: 15px; color: #9ca3af; font-style: italic;">
-                        Configurando tareas...
-                    </div>
-                </div>
-
-                <div class="feature-card">
-                    <h3>📹 Tip del Día: Servicio</h3>
-                    <div style="background: #f3f4f6; aspect-ratio: 16/9; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #9ca3af;">
-                        [ Aquí pondremos tu GIF/Video en bucle ]
-                    </div>
-                </div>
+       <div id="content-area">
+    <h1 class="user-welcome">Hola, <span id="display-name">...</span></h1>
+    <p style="color: #6b7280; margin-bottom: 40px;">Este es el pulso operativo de tu restaurante hoy.</p>
+    
+    <div id="dynamic-view">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="feature-card">
+                <h3>✅ Check-list por Sector</h3>
+                <div id="tasks-container">Configurando tareas...</div>
             </div>
-        </main>
-
-        <aside class="sidebar-right">
-            <div class="auth-logo" style="margin-bottom: 40px;">Flow<span>OPS</span></div>
-            
-            <nav>
-                <a href="#" class="nav-item active">🏠 Resumen General</a>
-                <a href="#" class="nav-item">👥 Gestión de Staff</a>
-                <a href="#" class="nav-item">✅ Check-lists</a>
-                <a href="#" class="nav-item">📊 Reportes Operativos</a>
-            </nav>
-
-            <div class="btn-logout" id="logout-btn">Cerrar Sesión</div>
-        </aside>
+            <div class="feature-card">
+                <h3>📹 Tip del Día</h3>
+                <div style="background: #eee; height: 150px; border-radius: 12px; display:flex; align-items:center; justify-content:center;">[ Video Relleno ]</div>
+            </div>
+        </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const _supabase = window.supabase.createClient('https://shbisaggioybktfnjowl.supabase.co', 'sb_publishable_zTyAOnvuO4g66DCPy-dtyQ_y7wLv9TF');
+
+    async function verificarAcceso() {
+        const { data: { session } } = await _supabase.auth.getSession();
+        if (!session) { window.location.href = 'auth.html#login'; }
+        else { document.getElementById('display-name').innerText = session.user.user_metadata.full_name || "Líder"; }
+    }
+
+    // --- FEATURE REAL: GESTIÓN DE STAFF ---
+    function mostrarStaff() {
+        const view = document.getElementById('dynamic-view');
+        view.innerHTML = `
+            <div class="feature-card">
+                <h3>👥 Registrar Nuevo Staff</h3>
+                <form id="staff-form" style="display: grid; gap: 10px; margin-top: 15px;">
+                    <input type="text" id="s-nombre" placeholder="Nombre Completo" required style="padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                    <input type="text" id="s-puesto" placeholder="Puesto (ej. Mesero)" required style="padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                    <select id="s-sector" style="padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                        <option value="Cocina">Cocina</option>
+                        <option value="Barra">Barra</option>
+                        <option value="Servicio">Servicio</option>
+                        <option value="Limpieza">Limpieza</option>
+                    </select>
+                    <label>Fecha de Ingreso:</label>
+                    <input type="date" id="s-ingreso" required style="padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                    <label>Cumpleaños:</label>
+                    <input type="date" id="s-cumple" required style="padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                    <button type="submit" style="background: #4f46e5; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer;">Guardar en Staff</button>
+                </form>
+            </div>
+            <div id="staff-list" class="feature-card">
+                <h3>Equipo Actual</h3>
+                <div id="tabla-staff">Cargando equipo...</div>
+            </div>
+        `;
+
+        // Lógica para guardar
+        document.getElementById('staff-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const { error } = await _supabase.from('profiles').insert([{
+                full_name: document.getElementById('s-nombre').value,
+                puesto: document.getElementById('s-puesto').value,
+                sector: document.getElementById('s-sector').value,
+                fecha_ingreso: document.getElementById('s-ingreso').value,
+                cumpleanos: document.getElementById('s-cumple').value,
+                estado: 'Activo'
+            }]);
+
+            if (error) alert("Error al guardar: " + error.message);
+            else { alert("¡Staff registrado con éxito!"); cargarStaff(); }
+        };
+        cargarStaff();
+    }
+
+    async function cargarStaff() {
+        const { data } = await _supabase.from('profiles').select('*');
+        const lista = document.getElementById('tabla-staff');
+        if (data) {
+            lista.innerHTML = data.map(p => `
+                <div style="padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                    <span><strong>${p.full_name}</strong> - ${p.puesto} (${p.sector})</span>
+                    <span style="color: green;">● ${p.estado}</span>
+                </div>
+            `).join('') || "No hay staff registrado aún.";
+        }
+    }
+
+    // Configurar botones del menú
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.onclick = (e) => {
+            if (e.target.innerText.includes("Gestión de Staff")) mostrarStaff();
+            if (e.target.innerText.includes("Resumen")) location.reload(); // Para volver al inicio rápido
+        }
+    });
+
+    verificarAcceso();
+</script>
         const _supabase = window.supabase.createClient('https://shbisaggioybktfnjowl.supabase.co', 'sb_publishable_zTyAOnvuO4g66DCPy-dtyQ_y7wLv9TF');
 
         async function verificarAcceso() {
