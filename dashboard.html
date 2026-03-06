@@ -31,21 +31,22 @@
                 <p style="color: #6b7280; margin-bottom: 40px;">Este es el pulso operativo de tu restaurante hoy.</p>
                 
                 <div id="dynamic-view">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                        <div class="feature-card">
-                            <h3>✅ Check-list por Sector</h3>
-                            <div id="tasks-container">
-                                <p style="color: #9ca3af;">Cargando tareas...</p>
-                            </div>
-                        </div>
-                        <div class="feature-card">
-                            <h3>✅ Check-list por Sector</h3>
-                            <div id="tasks-container">
-                                <p style="color: #9ca3af;">Cargando tareas...</p>
-                            </div>
-                        </div>
-                </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="feature-card">
+            <h3>✅ Check-list por Sector</h3>
+            <div id="tasks-container">
+                <p style="color: #9ca3af;">Cargando tareas...</p>
             </div>
+        </div>
+
+        <div class="feature-card">
+            <h3>📹 Tip del Día</h3>
+            <div style="background: #f3f4f6; height: 150px; border-radius: 12px; display:flex; align-items:center; justify-content:center; color: #9ca3af;">
+                [ Video de Entrenamiento ]
+            </div>
+        </div>
+    </div>
+</div>
         </main>
 
         <aside class="sidebar-right">
@@ -153,17 +154,65 @@
             const { error } = await _supabase.from('tareas_operativas').delete().eq('id', id);
             if (!error) cargarChecklist();
         }
-        function mostrarStaff() {
-            document.getElementById('dynamic-view').innerHTML = `
-                <div class="feature-card">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h3>👥 Equipo Actual</h3>
-                    </div>
-                    <div id="tabla-staff">Cargando equipo...</div>
-                </div>
+        // --- ESTE BLOQUE REEMPLAZA AL ANTERIOR ---
+function mostrarStaff() {
+    document.getElementById('dynamic-view').innerHTML = `
+        <div class="feature-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0;">👥 Gestión de Equipo</h3>
+                <button onclick="abrirFormularioStaff()" style="width: auto; background: #4f46e5; padding: 8px 15px; font-size: 14px;">+ Agregar Miembro</button>
+            </div>
+            <div id="formulario-staff-container"></div>
+            <div id="tabla-staff">Cargando equipo...</div>
+        </div>
     `;
     cargarStaff();
 }
+
+function abrirFormularioStaff() {
+    const container = document.getElementById('formulario-staff-container');
+    container.innerHTML = `
+        <div style="background: #f9fafb; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e5e7eb;">
+            <h4 style="margin-top: 0;">Nuevo Miembro</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <input type="text" id="staff-name" placeholder="Nombre Completo">
+                <input type="text" id="staff-puesto" placeholder="Puesto (ej. Bartender)">
+                <input type="text" id="staff-sector" placeholder="Sector (ej. Barra)">
+                <input type="date" id="staff-ingreso" title="Fecha de Ingreso">
+                <input type="date" id="staff-cumple" title="Cumpleaños">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button onclick="guardarStaff()" style="background: #10b981;">Guardar Staff</button>
+                <button onclick="document.getElementById('formulario-staff-container').innerHTML = ''" style="background: #9ca3af;">Cancelar</button>
+            </div>
+        </div>
+    `;
+}
+
+async function guardarStaff() {
+    const full_name = document.getElementById('staff-name').value;
+    const puesto = document.getElementById('staff-puesto').value;
+    const sector = document.getElementById('staff-sector').value;
+    const fecha_ingreso = document.getElementById('staff-ingreso').value;
+    const cumpleanos = document.getElementById('staff-cumple').value;
+
+    if (!full_name || !puesto) {
+        alert("Por favor llena al menos el nombre y el puesto");
+        return;
+    }
+
+    const { error } = await _supabase.from('profiles').insert([
+        { full_name, puesto, sector, fecha_ingreso, cumpleanos }
+    ]);
+
+    if (error) {
+        alert("Error al guardar: " + error.message);
+    } else {
+        document.getElementById('formulario-staff-container').innerHTML = ''; 
+        cargarStaff(); 
+    }
+}
+// --- AQUÍ TERMINA EL BLOQUE NUEVO ---
         // 5. Cerrar Sesión
         document.getElementById('logout-btn').addEventListener('click', async () => {
             await _supabase.auth.signOut();
