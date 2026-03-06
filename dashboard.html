@@ -1,65 +1,138 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FlowOPS - Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
-    <style>
-        /* Estilos en línea solo temporales para el placeholder del dashboard */
+    <link rel="stylesheet" href="css/style.css"> <style>
+        body { background-color: #fcfcfd; margin: 0; font-family: 'Inter', sans-serif; }
+        
         .dashboard-container {
+            display: flex;
             height: 100vh;
+        }
+
+        /* Contenido Principal (Izquierda) */
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        /* Sidebar Derecho (Estilo Creatio) */
+        .sidebar-right {
+            width: 280px;
+            background: white;
+            border-left: 1px solid #eee;
             display: flex;
             flex-direction: column;
+            padding: 30px 20px;
         }
 
-        .dashboard-header {
-            padding: 20px 8%;
-            border-bottom: 1px solid #E4E7EC;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        .user-welcome { font-size: 32px; font-weight: 800; color: #111827; margin-bottom: 10px; }
+        .user-welcome span { color: #4f46e5; }
 
-        .dashboard-content {
-            flex: 1;
-            padding: 40px 8%;
-            background-color: #F9FAFB;
-        }
-
-        .dashboard-card {
+        /* Tarjetas de Feature */
+        .feature-card {
             background: white;
-            padding: 40px;
-            border-radius: 12px;
-            border: 1px solid #E4E7EC;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f3f4f6;
+            margin-bottom: 20px;
+        }
+
+        .nav-item {
+            padding: 12px 15px;
+            border-radius: 10px;
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            transition: 0.3s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: #f3f4f6;
+            color: #4f46e5;
+        }
+
+        .btn-logout {
+            margin-top: auto;
+            color: #ef4444;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 10px;
             text-align: center;
         }
     </style>
 </head>
-
 <body>
 
     <div class="dashboard-container">
-        <header class="dashboard-header">
-            <div class="logo">
-                Flow<span>OPS</span>
-            </div>
-            <a href="index.html" class="nav-links" style="color: #697485; text-decoration: none;">Cerrar Sesión</a>
-        </header>
+        <main class="main-content">
+            <h1 class="user-welcome">Hola, <span id="display-name">...</span></h1>
+            <p style="color: #6b7280; margin-bottom: 40px;">Este es el pulso operativo de tu restaurante hoy.</p>
 
-        <main class="dashboard-content">
-            <div class="dashboard-card">
-                <h2>¡Bienvenido al Dashboard! 👋</h2>
-                <p style="margin-top: 15px; color: #697485;">Esta es una página de prueba. Aquí irá la interfaz de
-                    gestión de tu restaurante.</p>
-                <a href="index.html" class="btn-nav"
-                    style="display: inline-block; margin-top: 25px; text-decoration: none;">Volver al inicio</a>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="feature-card">
+                    <h3>✅ Check-list por Sector</h3>
+                    <p style="font-size: 14px; color: #6b7280;">Selecciona un área para ver pendientes.</p>
+                    <div id="tasks-container" style="margin-top: 15px; color: #9ca3af; font-style: italic;">
+                        Configurando tareas...
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <h3>📹 Tip del Día: Servicio</h3>
+                    <div style="background: #f3f4f6; aspect-ratio: 16/9; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #9ca3af;">
+                        [ Aquí pondremos tu GIF/Video en bucle ]
+                    </div>
+                </div>
             </div>
         </main>
+
+        <aside class="sidebar-right">
+            <div class="auth-logo" style="margin-bottom: 40px;">Flow<span>OPS</span></div>
+            
+            <nav>
+                <a href="#" class="nav-item active">🏠 Resumen General</a>
+                <a href="#" class="nav-item">👥 Gestión de Staff</a>
+                <a href="#" class="nav-item">✅ Check-lists</a>
+                <a href="#" class="nav-item">📊 Reportes Operativos</a>
+            </nav>
+
+            <div class="btn-logout" id="logout-btn">Cerrar Sesión</div>
+        </aside>
     </div>
 
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const _supabase = window.supabase.createClient('https://shbisaggioybktfnjowl.supabase.co', 'sb_publishable_zTyAOnvuO4g66DCPy-dtyQ_y7wLv9TF');
 
+        async function verificarAcceso() {
+            const { data: { session }, error } = await _supabase.auth.getSession();
+            
+            if (error || !session) {
+                // Si no hay sesión, te regresa al login
+                window.location.href = 'auth.html#login';
+            } else {
+                // Si hay sesión, mostramos tu nombre
+                const userName = session.user.user_metadata.full_name || "Líder";
+                document.getElementById('display-name').innerText = userName;
+            }
+        }
+
+        // Función para salir
+        document.getElementById('logout-btn').onclick = async () => {
+            await _supabase.auth.signOut();
+            window.location.href = 'auth.html#login';
+        };
+
+        verificarAcceso();
+    </script>
+</body>
 </html>
