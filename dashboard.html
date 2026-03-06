@@ -169,7 +169,7 @@ async function eliminarStaff(id) {
     }
 }
         // --- AQUÍ TERMINA ELIMINAR Y EMPIEZA EL CHECKLIST ---
-
+// --- ESTA ES LA LÓGICA QUE CALCULA LOS COLORES ---
 async function cargarChecklist() {
     const { data: tareas } = await _supabase.from('tareas_operativas').select('*');
     const container = document.getElementById('tasks-container');
@@ -187,17 +187,35 @@ async function cargarChecklist() {
         const [hLimite, mLimite] = t.hora_limite.split(':').map(Number);
         const minsRestantes = (hLimite * 60 + mLimite) - (horaActual * 60 + minActual);
         
-        let color = "#10b981"; // Verde
+        let color = "#10b981"; // Verde (A tiempo)
         let statusText = "A tiempo";
 
         if (minsRestantes <= 0) {
-            color = "#ef4444"; // Rojo
+            color = "#ef4444"; // Rojo (Vencida)
             statusText = "¡VENCIDA!";
         } else if (minsRestantes <= 30) {
-            color = "#f59e0b"; // Naranja
+            color = "#f59e0b"; // Naranja (Por vencer)
             statusText = "Casi vence";
         }
 
+        return `
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #fff; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid ${color}; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <div>
+                    <strong style="display: block; font-size: 14px;">${t.descripcion}</strong>
+                    <small style="color: #6b7280;">Límite: ${t.hora_limite} - <span style="color: ${color}; font-weight: bold;">${statusText}</span></small>
+                </div>
+                <input type="checkbox" style="width: 18px; height: 18px; cursor: pointer;" onchange="completarTarea('${t.id}')">
+            </div>
+        `;
+    }).join('');
+}
+
+async function completarTarea(id) {
+    const { error } = await _supabase.from('tareas_operativas').delete().eq('id', id);
+    if (!error) {
+        cargarChecklist(); // Refresca la lista automáticamente
+    }
+}
         return `
             <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #fff; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid ${color}; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
                 <div>
