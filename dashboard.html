@@ -153,7 +153,17 @@
             const { error } = await _supabase.from('tareas_operativas').delete().eq('id', id);
             if (!error) cargarChecklist();
         }
-
+        function mostrarStaff() {
+            document.getElementById('dynamic-view').innerHTML = `
+                <div class="feature-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3>👥 Equipo Actual</h3>
+                    </div>
+                    <div id="tabla-staff">Cargando equipo...</div>
+                </div>
+    `;
+    cargarStaff();
+}
         // 5. Cerrar Sesión
         document.getElementById('logout-btn').addEventListener('click', async () => {
             await _supabase.auth.signOut();
