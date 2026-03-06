@@ -114,22 +114,36 @@
         }
 
         async function cargarStaff() {
-            const { data } = await _supabase.from('profiles').select('*');
-            const lista = document.getElementById('tabla-staff');
-            if (data) {
-                lista.innerHTML = data.map(p => `
-                    <div style="padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
-                        <span><strong>${p.full_name}</strong> - ${p.puesto}</span>
-                        <span style="color: #10b981;">● ${p.estado}</span>
-                    </div>
-                `).join('') || "No hay staff registrado.";
-            }
-        }
-
-        document.getElementById('logout-btn').onclick = async () => {
-            await _supabase.auth.signOut();
-            window.location.href = 'auth.html#login';
-        };
+    const { data } = await _supabase.from('profiles').select('*');
+    const lista = document.getElementById('tabla-staff');
+    
+    if (data && data.length > 0) {
+        lista.innerHTML = `
+            <table style="width:100%; border-collapse: collapse; margin-top: 15px; font-size: 14px;">
+                <thead>
+                    <tr style="text-align: left; color: #6b7280; border-bottom: 2px solid #f3f4f6;">
+                        <th style="padding: 10px;">Nombre</th>
+                        <th style="padding: 10px;">Puesto/Sector</th>
+                        <th style="padding: 10px;">Ingreso</th>
+                        <th style="padding: 10px;">🎂 Cumple</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.map(p => `
+                        <tr style="border-bottom: 1px solid #f3f4f6;">
+                            <td style="padding: 12px;"><strong>${p.full_name}</strong></td>
+                            <td style="padding: 12px;">${p.puesto} <br> <small style="color:#4f46e5">${p.sector}</small></td>
+                            <td style="padding: 12px;">${p.fecha_ingreso}</td>
+                            <td style="padding: 12px;">${p.cumpleanos}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    } else {
+        lista.innerHTML = "<p style='color: #9ca3af; font-style: italic;'>No hay staff registrado aún.</p>";
+    }
+};
 
         verificarAcceso();
     </script>
