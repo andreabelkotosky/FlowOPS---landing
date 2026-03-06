@@ -34,7 +34,9 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div class="feature-card">
                             <h3>✅ Check-list por Sector</h3>
-                            <p>Configurando tareas...</p>
+                            <div id="tasks-container">
+                                <p style="color: #9ca3af;">Cargando tareas...</p>
+                            </div>
                         </div>
                         <div class="feature-card">
                             <h3>📹 Tip del Día</h3>
@@ -60,7 +62,7 @@
     <script>
        // 1. Configuración Inicial
         const { createClient } = supabase;
-        const _supabase = createClient('TU_URL_DE_SUPABASE', 'TU_KEY_DE_SUPABASE');
+        const _supabase = createClient('https://tu-proyecto.supabase.co', 'tu-key-larga-aqui');
 
         // 2. Verificar Acceso al entrar
         async function verificarAcceso() {
