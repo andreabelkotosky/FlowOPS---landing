@@ -58,186 +58,107 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const _supabase = window.supabase.createClient('https://shbisaggioybktfnjowl.supabase.co', 'sb_publishable_zTyAOnvuO4g66DCPy-dtyQ_y7wLv9TF');
+       // 1. Configuración Inicial
+        const { createClient } = supabase;
+        const _supabase = createClient('TU_URL_DE_SUPABASE', 'TU_KEY_DE_SUPABASE');
 
-       async function verificarAcceso() {
-    const { data: { session } } = await _supabase.auth.getSession();
-    
-    if (!session) { 
-        // Si no hay sesión, manda al login
-        window.location.href = 'auth.html#login'; 
-    } else { 
-        // Si hay sesión, pone el nombre y carga todo lo demás
-        document.getElementById('display-name').innerText = session.user.user_metadata.full_name || "Líder"; 
-        
-        // Ejecutamos las dos funciones principales
-        cargarStaff(); 
-        cargarChecklist(); 
-    }
-}
-
-        async function mostrarStaff() {
-            const view = document.getElementById('dynamic-view');
-            view.innerHTML = `
-                <div class="feature-card">
-                    <h3>👥 Registrar Nuevo Staff</h3>
-                    <form id="staff-form">
-                        <input type="text" id="s-nombre" placeholder="Nombre Completo" required>
-                        <input type="text" id="s-puesto" placeholder="Puesto (ej. Mesero)" required>
-                        <select id="s-sector">
-                            <option value="Cocina">Cocina</option>
-                            <option value="Barra">Barra</option>
-                            <option value="Servicio">Servicio</option>
-                            <option value="Limpieza">Limpieza</option>
-                        </select>
-                        <label>Fecha de Ingreso:</label>
-                        <input type="date" id="s-ingreso" required>
-                        <label>Cumpleaños:</label>
-                        <input type="date" id="s-cumple" required>
-                        <button type="submit">Guardar en Staff</button>
-                    </form>
-                </div>
-                <div class="feature-card">
-                    <h3>Equipo Actual</h3>
-                    <div id="tabla-staff">Cargando equipo...</div>
-                </div>
-            `;
-
-            document.getElementById('staff-form').onsubmit = async (e) => {
-                e.preventDefault();
-                const { error } = await _supabase.from('profiles').insert([{
-                    full_name: document.getElementById('s-nombre').value,
-                    puesto: document.getElementById('s-puesto').value,
-                    sector: document.getElementById('s-sector').value,
-                    fecha_ingreso: document.getElementById('s-ingreso').value,
-                    cumpleanos: document.getElementById('s-cumple').value,
-                    estado: 'Activo'
-                }]);
-
-                if (error) alert("Error: " + error.message);
-                else { alert("¡Staff registrado!"); cargarStaff(); }
-            };
-            cargarStaff();
+        // 2. Verificar Acceso al entrar
+        async function verificarAcceso() {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'auth.html#login';
+            } else {
+                document.getElementById('display-name').innerText = session.user.user_metadata.full_name || "Líder";
+                // Cargamos todo lo importante
+                cargarStaff();
+                cargarChecklist();
+            }
         }
 
+        // 3. Gestión de Staff (Tabla)
         async function cargarStaff() {
-    const { data } = await _supabase.from('profiles').select('*');
-    const lista = document.getElementById('tabla-staff');
-    
-    if (data && data.length > 0) {
-        lista.innerHTML = `
-            <table style="width:100%; border-collapse: collapse; margin-top: 15px; font-size: 14px;">
-                <thead>
-                    <tr style="text-align: left; color: #6b7280; border-bottom: 2px solid #f3f4f6;">
-                        <th style="padding: 10px;">Nombre</th>
-                        <th style="padding: 10px;">Puesto/Sector</th>
-                        <th style="padding: 10px;">Ingreso</th>
-                        <th style="padding: 10px;">🎂 Cumple</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${data.map(p => `
-                        <tr style="border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 12px;"><strong>${p.full_name}</strong></td>
-                            <td style="padding: 12px;">${p.puesto} <br> <small style="color:#4f46e5">${p.sector}</small></td>
-                            <td style="padding: 12px;">${p.fecha_ingreso}</td>
-                            <td style="padding: 12px;">${p.cumpleanos}</td>
-                            <td style="padding: 12px; text-align: right;">
-                                <button onclick="eliminarStaff('${p.id}')" style="background: #fee2e2; color: #ef4444; padding: 5px 10px; font-size: 12px; width: auto; border: 1px solid #fecaca;">Eliminar</button>
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
-    } else {
-        lista.innerHTML = "<p style='color: #9ca3af; font-style: italic;'>No hay staff registrado aún.</p>";
-    }
-};
-        // --- FUNCIÓN PARA ELIMINAR STAFF ---
-async function eliminarStaff(id) {
-    const confirmar = confirm("¿Estás segura de que quieres eliminar a este miembro del equipo?");
-    
-    if (confirmar) {
-        const { error } = await _supabase
-            .from('profiles')
-            .delete()
-            .eq('id', id);
-
-        if (error) {
-            alert("Error al eliminar: " + error.message);
-        } else {
-            alert("Empleado eliminado.");
-            cargarStaff(); // Esto hace que la tabla se actualice solita
-        }
-    }
-}
-        // --- AQUÍ TERMINA ELIMINAR Y EMPIEZA EL CHECKLIST ---
-// --- ESTA ES LA LÓGICA QUE CALCULA LOS COLORES ---
-async function cargarChecklist() {
-    const { data: tareas } = await _supabase.from('tareas_operativas').select('*');
-    const container = document.getElementById('tasks-container');
-    
-    if (!tareas || tareas.length === 0) {
-        container.innerHTML = "<p style='color: #9ca3af;'>No hay tareas pendientes.</p>";
-        return;
-    }
-
-    const ahora = new Date();
-    const horaActual = ahora.getHours();
-    const minActual = ahora.getMinutes();
-
-    container.innerHTML = tareas.map(t => {
-        const [hLimite, mLimite] = t.hora_limite.split(':').map(Number);
-        const minsRestantes = (hLimite * 60 + mLimite) - (horaActual * 60 + minActual);
-        
-        let color = "#10b981"; // Verde (A tiempo)
-        let statusText = "A tiempo";
-
-        if (minsRestantes <= 0) {
-            color = "#ef4444"; // Rojo (Vencida)
-            statusText = "¡VENCIDA!";
-        } else if (minsRestantes <= 30) {
-            color = "#f59e0b"; // Naranja (Por vencer)
-            statusText = "Casi vence";
+            const { data } = await _supabase.from('profiles').select('*');
+            const lista = document.getElementById('tabla-staff');
+            if (data && data.length > 0) {
+                lista.innerHTML = `
+                    <table style="width:100%; border-collapse: collapse; margin-top: 15px; font-size: 14px;">
+                        <thead>
+                            <tr style="text-align: left; color: #6b7280; border-bottom: 2px solid #f3f4f6;">
+                                <th style="padding: 10px;">Nombre</th>
+                                <th style="padding: 10px;">Puesto/Sector</th>
+                                <th style="padding: 10px;">Ingreso</th>
+                                <th style="padding: 10px;">🎂 Cumple</th>
+                                <th style="padding: 10px;">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(p => `
+                                <tr style="border-bottom: 1px solid #f3f4f6;">
+                                    <td style="padding: 12px;"><strong>${p.full_name}</strong></td>
+                                    <td style="padding: 12px;">${p.puesto} <br> <small style="color:#4f46e5">${p.sector}</small></td>
+                                    <td style="padding: 12px;">${p.fecha_ingreso}</td>
+                                    <td style="padding: 12px;">${p.cumpleanos}</td>
+                                    <td style="padding: 12px; text-align: right;">
+                                        <button onclick="eliminarStaff('${p.id}')" style="background: #fee2e2; color: #ef4444; padding: 5px 10px; font-size: 12px; border: 1px solid #fecaca; cursor:pointer;">Eliminar</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>`;
+            } else {
+                lista.innerHTML = "<p style='color: #9ca3af;'>No hay staff registrado.</p>";
+            }
         }
 
-        return `
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #fff; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid ${color}; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <div>
-                    <strong style="display: block; font-size: 14px;">${t.descripcion}</strong>
-                    <small style="color: #6b7280;">Límite: ${t.hora_limite} - <span style="color: ${color}; font-weight: bold;">${statusText}</span></small>
-                </div>
-                <input type="checkbox" style="width: 18px; height: 18px; cursor: pointer;" onchange="completarTarea('${t.id}')">
-            </div>
-        `;
-    }).join('');
-}
+        async function eliminarStaff(id) {
+            if (confirm("¿Eliminar a este miembro del equipo?")) {
+                const { error } = await _supabase.from('profiles').delete().eq('id', id);
+                if (!error) cargarStaff();
+            }
+        }
 
-async function completarTarea(id) {
-    const { error } = await _supabase.from('tareas_operativas').delete().eq('id', id);
-    if (!error) {
-        cargarChecklist(); // Refresca la lista automáticamente
-    }
-}
-        return `
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #fff; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid ${color}; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <div>
-                    <strong style="display: block; font-size: 14px;">${t.descripcion}</strong>
-                    <small style="color: #6b7280;">Límite: ${t.hora_limite} - <span style="color: ${color}; font-weight: bold;">${statusText}</span></small>
-                </div>
-                <input type="checkbox" style="width: 18px; height: 18px; cursor: pointer;" onchange="completarTarea('${t.id}')">
-            </div>
-        `;
-    }).join('');
-}
+        // 4. Lógica del Semáforo (Checklist)
+        async function cargarChecklist() {
+            const { data: tareas } = await _supabase.from('tareas_operativas').select('*');
+            const container = document.getElementById('tasks-container');
+            if (!tareas || tareas.length === 0) {
+                container.innerHTML = "<p style='color: #9ca3af;'>No hay tareas pendientes.</p>";
+                return;
+            }
+            const ahora = new Date();
+            const hA = ahora.getHours();
+            const mA = ahora.getMinutes();
 
-async function completarTarea(id) {
-    const { error } = await _supabase.from('tareas_operativas').delete().eq('id', id);
-    if (!error) {
-        cargarChecklist(); 
-    }
+            container.innerHTML = tareas.map(t => {
+                const [hL, mL] = t.hora_limite.split(':').map(Number);
+                const minsRes = (hL * 60 + mL) - (hA * 60 + mA);
+                let color = "#10b981"; let txt = "A tiempo";
+                if (minsRes <= 0) { color = "#ef4444"; txt = "VENCIDA"; }
+                else if (minsRes <= 30) { color = "#f59e0b"; txt = "Casi vence"; }
 
+                return `
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #fff; border-radius: 10px; margin-bottom: 8px; border-left: 5px solid ${color}; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <div>
+                            <strong style="display:block; font-size:13px;">${t.descripcion}</strong>
+                            <small style="color: ${color}; font-weight: bold;">${txt} (${t.hora_limite})</small>
+                        </div>
+                        <input type="checkbox" onchange="completarTarea('${t.id}')" style="cursor:pointer;">
+                    </div>`;
+            }).join('');
+        }
+
+        async function completarTarea(id) {
+            const { error } = await _supabase.from('tareas_operativas').delete().eq('id', id);
+            if (!error) cargarChecklist();
+        }
+
+        // 5. Cerrar Sesión
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            await _supabase.auth.signOut();
+            window.location.href = 'auth.html#login';
+        });
+
+        // Arrancar todo
         verificarAcceso();
     </script>
 </body>
