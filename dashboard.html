@@ -135,6 +135,10 @@
                             <td style="padding: 12px;">${p.puesto} <br> <small style="color:#4f46e5">${p.sector}</small></td>
                             <td style="padding: 12px;">${p.fecha_ingreso}</td>
                             <td style="padding: 12px;">${p.cumpleanos}</td>
+                            <td style="padding: 12px;">${p.cumpleanos}</td>
+                            <td style="padding: 12px; text-align: right;">
+                                <button onclick="eliminarStaff('${p.id}')" style="background: #fee2e2; color: #ef4444; padding: 5px 10px; font-size: 12px; width: auto; border: 1px solid #fecaca;">Eliminar</button>
+                            </td>
                         </tr>
                     `).join('')}
                 </tbody>
