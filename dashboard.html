@@ -34,6 +34,17 @@
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
         <div class="feature-card">
             <h3>✅ Check-list por Sector</h3>
+            <div class="feature-card">
+                <h3>✅ Check-list por Sector</h3>
+    
+                <div id="formulario-tarea-container"></div>
+                <button onclick="abrirFormularioTarea()" style="margin-bottom: 20px; background: #4f46e5;">
+                    + Agregar Nueva Tarea
+                </button>
+                <div id="tasks-container">
+                    <p style="color: #9ca3af;">Cargando tareas...</p>
+                </div>
+            </div>
             <div id="tasks-container">
                 <p style="color: #9ca3af;">Cargando tareas...</p>
             </div>
@@ -234,6 +245,78 @@ async function guardarStaff() {
     }
 }
 // --- AQUÍ TERMINA EL BLOQUE NUEVO ---
+        // --- FUNCIONES PARA TAREAS ---
+async function abrirFormularioTarea() {
+    // 1. Buscamos a tu equipo en la base de datos
+    const { data: staff } = await _supabase.from('profiles').select('full_name');
+    let opcionesStaff = staff ? staff.map(p => `<option value="${p.full_name}">${p.full_name}</option>`).join('') : '';
+
+    const container = document.getElementById('formulario-tarea-container');
+    container.innerHTML = `
+        <div style="background: #f9fafb; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e5e7eb;">
+            <h4 style="margin-top: 0;">📝 Nueva Tarea</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div style="grid-column: span 2;">
+                    <label style="font-size: 11px;">Descripción</label>
+                    <input type="text" id="task-desc" placeholder="Ej. Limpieza de barra">
+                </div>
+                <div>
+                    <label style="font-size: 11px;">Responsable</label>
+                    <select id="task-owner">${opcionesStaff}</select>
+                </div>
+                <div>
+                    <label style="font-size: 11px;">Prioridad</label>
+                    <select id="task-priority">
+                        <option value="1">⭐ Normal</option>
+                        <option value="2">⭐⭐ Alta</option>
+                        <option value="3">⭐⭐⭐ Urgente</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size: 11px;">Hora Límite</label>
+                    <input type="time" id="task-deadline">
+                </div>
+                <div>
+                    <label style="font-size: 11px;">Sector</label>
+                    <select id="task-sector">
+                        <option value="Barra">Barra</option>
+                        <option value="Cocina">Cocina</option>
+                        <option value="Servicio">Servicio</option>
+                        <option value="Administración">Administración</option>
+                    </select>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button onclick="guardarTarea()" style="background: #10b981;">Crear Tarea</button>
+                <button onclick="document.getElementById('formulario-tarea-container').innerHTML = ''" style="background: #9ca3af;">Cancelar</button>
+            </div>
+        </div>
+    `;
+}
+
+async function guardarTarea() {
+    const descripcion = document.getElementById('task-desc').value;
+    const responsable_nombre = document.getElementById('task-owner').value;
+    const prioridad = document.getElementById('task-priority').value;
+    const hora_limite = document.getElementById('task-deadline').value;
+    const sector = document.getElementById('task-sector').value;
+
+    if (!descripcion || !hora_limite) {
+        alert("Pon una descripción y hora límite");
+        return;
+    }
+
+    const { error } = await _supabase.from('tareas_operativas').insert([
+        { descripcion, responsable_nombre, prioridad, hora_limite, sector }
+    ]);
+
+    if (error) {
+        alert("Error: " + error.message);
+    } else {
+        document.getElementById('formulario-tarea-container').innerHTML = '';
+        cargarChecklist(); // Esto refresca la lista para que veas la nueva tarea
+    }
+}
         // 5. Cerrar Sesión
         document.getElementById('logout-btn').addEventListener('click', async () => {
             await _supabase.auth.signOut();
