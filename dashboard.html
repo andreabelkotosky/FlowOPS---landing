@@ -133,33 +133,46 @@
 
         // 4. Lógica del Semáforo (Checklist)
         async function cargarChecklist() {
-            const { data: tareas } = await _supabase.from('tareas_operativas').select('*');
-            const container = document.getElementById('tasks-container');
-            if (!tareas || tareas.length === 0) {
-                container.innerHTML = "<p style='color: #9ca3af;'>No hay tareas pendientes.</p>";
-                return;
-            }
-            const ahora = new Date();
-            const hA = ahora.getHours();
-            const mA = ahora.getMinutes();
+    const { data: tareas } = await _supabase.from('tareas_operativas').select('*');
+    const container = document.getElementById('tasks-container');
+    
+    if (!tareas || tareas.length === 0) {
+        container.innerHTML = "<p style='color: #9ca3af;'>No hay tareas pendientes.</p>";
+        return;
+    }
 
-            container.innerHTML = tareas.map(t => {
-                const [hL, mL] = t.hora_limite.split(':').map(Number);
-                const minsRes = (hL * 60 + mL) - (hA * 60 + mA);
-                let color = "#10b981"; let txt = "A tiempo";
-                if (minsRes <= 0) { color = "#ef4444"; txt = "VENCIDA"; }
-                else if (minsRes <= 30) { color = "#f59e0b"; txt = "Casi vence"; }
+    const ahora = new Date();
+    const hA = ahora.getHours();
+    const mA = ahora.getMinutes();
 
-                return `
-                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #fff; border-radius: 10px; margin-bottom: 8px; border-left: 5px solid ${color}; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                        <div>
-                            <strong style="display:block; font-size:13px;">${t.descripcion}</strong>
-                            <small style="color: ${color}; font-weight: bold;">${txt} (${t.hora_limite})</small>
-                        </div>
-                        <input type="checkbox" onchange="completarTarea('${t.id}')" style="cursor:pointer;">
-                    </div>`;
-            }).join('');
-        }
+    container.innerHTML = tareas.map(t => {
+        const [hL, mL] = t.hora_limite.split(':').map(Number);
+        const minsRes = (hL * 60 + mL) - (hA * 60 + mA);
+        
+        // --- Lógica del Semáforo ---
+        let color = "#10b981"; let txt = "A tiempo";
+        if (minsRes < -120) { color = "#ef4444"; txt = "CRÍTICO (+3h)"; } // Rojo: 3h o más
+        else if (minsRes < 0) { color = "#f59e0b"; txt = "ATRASADO"; }    // Amarillo: 1-2h
+        
+        // --- Lógica de Estrellitas ---
+        const estrellas = "⭐".repeat(t.prioridad || 1);
+
+        return `
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px; background: #fff; border-radius: 12px; margin-bottom: 10px; border-left: 6px solid ${color}; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <div style="flex: 1;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <strong style="font-size: 14px;">${t.descripcion}</strong>
+                        <span style="font-size: 12px;">${estrellas}</span>
+                    </div>
+                    <div style="margin-top: 4px;">
+                        <small style="color: #6b7280; display: block;">👤 Resp: <strong>${t.responsable_nombre || 'Sin asignar'}</strong></small>
+                        <small style="color: ${color}; font-weight: bold;">${txt} (${t.hora_limite})</small>
+                    </div>
+                </div>
+                <input type="checkbox" onchange="completarTarea('${t.id}')" style="width: 20px; height: 20px; cursor: pointer;">
+            </div>`;
+    }).join('');
+}
 
         async function completarTarea(id) {
             const { error } = await _supabase.from('tareas_operativas').delete().eq('id', id);
