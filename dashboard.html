@@ -147,17 +147,39 @@
         </div>
     </div>
 </div>
+                <div class="feature-card" style="border-left: 6px solid #3b82f6;">
+            <h3 style="font-size: 16px;">🚚 Agenda de Proveedores (Próximos)</h3>
+            <div style="font-size: 13px;">
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
+                    <span>🥩 <strong>Carnes finas</strong></span>
+                    <span style="color: #6b7280;">Lun 09:00</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
+                    <span>🥦 <strong>Vegetales Org.</strong></span>
+                    <span style="color: #6b7280;">Lun 10:30</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                    <span>🍷 <strong>Cava & Vinos</strong></span>
+                    <span style="color: #6b7280;">Mar 12:00</span>
+                </div>
+            </div>
+            <div style="margin-top: 10px; background: #eff6ff; padding: 8px; border-radius: 6px; font-size: 11px; color: #1d4ed8;">
+                💡 <strong>Tip logístico:</strong> Confirmar pedido de vinos 24h antes.
+            </div>
+        </div>
         </main>
 
-        <aside class="sidebar-right">
-            <div class="auth-logo">Flow<span>OPS</span></div>
-            <nav>
-                <div class="nav-item" onclick="location.reload()">🏠 Resumen General</div>
-                <div class="nav-item" onclick="mostrarStaff()">👥 Gestión de Staff</div>
-                <div class="nav-item">✅ Check-lists</div>
-            </nav>
-            <div class="btn-logout" id="logout-btn">Cerrar Sesión</div>
-        </aside>
+       <aside class="sidebar-right">
+    <div class="auth-logo">Flow<span>OPS</span></div>
+    <nav>
+        <div class="nav-item" onclick="location.reload()">🏠 Resumen General</div>
+        <div class="nav-item" onclick="mostrarStaff()">👥 Gestión de Staff</div>
+        
+        <div class="nav-item" onclick="mostrarChecklist()">✅ Check-lists</div>
+        
+    </nav>
+    <div class="btn-logout" id="logout-btn">Cerrar Sesión</div>
+</aside>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -431,6 +453,10 @@ async function guardarTarea() {
         document.getElementById('formulario-tarea-container').innerHTML = '';
         cargarChecklist(); // Esto refresca la lista para que veas la nueva tarea
     }
+}
+        function mostrarChecklist() {
+    // Esto simplemente recarga la vista principal para que aparezca el checklist de nuevo
+    location.reload(); 
 }
         // 5. Cerrar Sesión
         document.getElementById('logout-btn').addEventListener('click', async () => {
