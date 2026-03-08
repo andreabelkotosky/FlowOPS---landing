@@ -36,6 +36,13 @@
             <h3>✅ Check-list por Sector</h3>
             <div class="feature-card">
                 <h3>✅ Check-list por Sector</h3>
+                <div style="margin-bottom: 15px; display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button onclick="filtrarTareas('Todas')" style="width: auto; background: #6b7280; padding: 5px 12px; font-size: 12px;">Todas</button>
+                    <button onclick="filtrarTareas('Barra')" style="width: auto; background: #4f46e5; padding: 5px 12px; font-size: 12px;">Barra</button>
+                    <button onclick="filtrarTareas('Cocina')" style="width: auto; background: #10b981; padding: 5px 12px; font-size: 12px;">Cocina</button>
+                    <button onclick="filtrarTareas('Servicio')" style="width: auto; background: #f59e0b; padding: 5px 12px; font-size: 12px;">Servicio</button>
+                    <button onclick="filtrarTareas('Administración')" style="width: auto; background: #ef4444; padding: 5px 12px; font-size: 12px;">Admin</button>
+                </div>
     
                 <div id="formulario-tarea-container"></div>
                 <button onclick="abrirFormularioTarea()" style="margin-bottom: 20px; background: #4f46e5;">
@@ -149,16 +156,15 @@
         const [hL, mL] = t.hora_limite.split(':').map(Number);
         const minsRes = (hL * 60 + mL) - (hA * 60 + mA);
         
-        // --- Lógica del Semáforo ---
         let color = "#10b981"; let txt = "A tiempo";
-        if (minsRes < -120) { color = "#ef4444"; txt = "CRÍTICO (+3h)"; } // Rojo: 3h o más
-        else if (minsRes < 0) { color = "#f59e0b"; txt = "ATRASADO"; }    // Amarillo: 1-2h
+        if (minsRes < -120) { color = "#ef4444"; txt = "CRÍTICO (+3h)"; }
+        else if (minsRes < 0) { color = "#f59e0b"; txt = "ATRASADO"; }
         
-        // --- Lógica de Estrellitas ---
         const estrellas = "⭐".repeat(t.prioridad || 1);
 
+        // AQUÍ ESTÁ EL CAMBIO CLAVE: data-sector="${t.sector}"
         return `
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px; background: #fff; border-radius: 12px; margin-bottom: 10px; border-left: 6px solid ${color}; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <div data-sector="${t.sector}" style="display: flex; align-items: center; justify-content: space-between; padding: 15px; background: #fff; border-radius: 12px; margin-bottom: 10px; border-left: 6px solid ${color}; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
                 <div style="flex: 1;">
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <strong style="font-size: 14px;">${t.descripcion}</strong>
@@ -178,6 +184,20 @@
             const { error } = await _supabase.from('tareas_operativas').delete().eq('id', id);
             if (!error) cargarChecklist();
         }
+        function filtrarTareas(sector) {
+    const tareas = document.querySelectorAll('#tasks-container > div'); // Agarra todas las tarjetas de tareas
+    
+    tareas.forEach(tarea => {
+        // Buscamos el sector dentro de la tarjeta (necesitamos un ajuste en cargarChecklist para esto)
+        if (sector === 'Todas') {
+            tarea.style.display = 'flex';
+        } else {
+            // Si la tarea tiene el atributo del sector, la mostramos, si no, la ocultamos
+            const sectorTarea = tarea.getAttribute('data-sector');
+            tarea.style.display = (sectorTarea === sector) ? 'flex' : 'none';
+        }
+    });
+}
         // --- ESTE BLOQUE REEMPLAZA AL ANTERIOR ---
 function mostrarStaff() {
     document.getElementById('dynamic-view').innerHTML = `
